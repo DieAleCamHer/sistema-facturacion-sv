@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes - Sistema de Facturación SV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="bi bi-receipt-cutoff"></i> Facturación SV
+            </a>
+            <div class="d-flex align-items-center">
+                <div id="userInfo"></div>
+                <button class="btn btn-outline-light" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Salir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2">
+                <div class="list-group">
+                    <a href="dashboard.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-house-door"></i> Dashboard
+                    </a>
+                    <a href="clientes.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                    <a href="productos.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-box-seam"></i> Productos
+                    </a>
+                    <a href="factura-v2.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-text"></i> Nueva Factura
+                    </a>
+                    <a href="ccf-v2.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-ruled"></i> Nuevo CCF
+                    </a>
+                    <a href="nota-credito-v2.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-minus"></i> Nota de Crédito
+                    </a>
+                    <a href="lista-dtes.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-ul"></i> Ver DTEs
+                    </a>
+                    <a href="invalidar-dte.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-x-circle"></i> Invalidar DTE
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="col-md-10">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-people text-primary"></i> Gestión de Clientes</h2>
+                    <button class="btn btn-primary" onclick="abrirModalNuevo()">
+                        <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                    </button>
+                </div>
+
+                <!-- Tabla de clientes -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Tipo Doc</th>
+                                        <th>Número Doc</th>
+                                        <th>NRC</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaClientes">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border text-primary" role="status"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar cliente -->
+    <div class="modal fade" id="modalCliente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo">Nuevo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCliente">
+                        <input type="hidden" id="clienteId">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre / Razón Social *</label>
+                                <input type="text" class="form-control" id="nombre" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Tipo Documento *</label>
+                                <select class="form-select" id="tipo_documento" required>
+                                    <option value="13">DUI</option>
+                                    <option value="36">NIT</option>
+                                    <option value="37">Pasaporte</option>
+                                    <option value="2">Carnet Residente</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Número Documento *</label>
+                                <input type="text" class="form-control" id="num_documento" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">NRC</label>
+                                <input type="text" class="form-control" id="nrc" placeholder="Opcional">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="Opcional">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="telefono" placeholder="Opcional">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccion" rows="2" placeholder="Opcional"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="departamento" placeholder="Opcional">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Municipio</label>
+                                <input type="text" class="form-control" id="municipio" placeholder="Opcional">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Actividad Económica</label>
+                            <input type="text" class="form-control" id="actividad_economica" placeholder="Opcional">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarCliente()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/clientes.js"></script>
+</body>
+</html>

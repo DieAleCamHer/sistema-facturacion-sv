@@ -1,0 +1,125 @@
+# ========================================
+# Sistema de Facturación SV - .gitignore
+# ========================================
+
+# ========================================
+# CONFIGURACIÓN SENSIBLE
+# ========================================
+config/config.php
+.env
+.env.local
+.env.production
+
+# ========================================
+# DEPENDENCIAS
+# ========================================
+/vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# ========================================
+# ARCHIVOS GENERADOS
+# ========================================
+/storage/pdfs/*.pdf
+/storage/logs/*.log
+/storage/cache/*
+/tmp/*
+/temp/*
+
+# Mantener carpetas vacías
+!storage/pdfs/.gitkeep
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+
+# ========================================
+# SISTEMA OPERATIVO
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================================
+# IDEs Y EDITORES
+# ========================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PhpStorm / JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/
+
+# Eclipse
+.project
+.buildpath
+.settings/
+
+# ========================================
+# PHP
+# ========================================
+*.log
+error_log
+php_errors.log
+
+# ========================================
+# BACKUP Y TEMPORAL
+# ========================================
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+*~
+*.swp
+*.swo
+
+# ========================================
+# DESARROLLO
+# ========================================
+/tests/
+/docs/builds/
+.phpunit.result.cache
+coverage/
+.phpcs-cache
+
+# ========================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# ========================================
+# Archivos de desarrollo local
+NOTAS.txt
+TODO.txt
+TESTING.md
+
+# PDFs de prueba (mantener solo el directorio)
+storage/pdfs/*
+!storage/pdfs/.gitkeep
+
+# Logos personalizados (subir uno genérico)
+public/logos/*
+!public/logos/logo-empresa.png
+
+# ========================================
+# BASE DE DATOS
+# ========================================
+# Backups locales
+database/*.sql.backup
+database/backups/
+*.sql.gz
+
+# Mantener solo el schema principal
+!database/schema.sql

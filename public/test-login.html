@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test de Login</h1>
+    <button onclick="testLogin()">Probar Login</button>
+    <pre id="resultado"></pre>
+
+    <script>
+    async function testLogin() {
+        const url = 'http://localhost/sistema-facturacion-php/public/index.php/api/login';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: 'admin@sistema.sv',
+                    password: 'admin123'
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById('resultado').textContent = JSON.stringify(data, null, 2);
+            
+        } catch (error) {
+            document.getElementById('resultado').textContent = 'ERROR: ' + error.message;
+        }
+    }
+    </script>
+</body>
+</html>

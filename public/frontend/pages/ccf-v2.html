@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo CCF - Sistema de Facturación SV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="bi bi-receipt-cutoff"></i> Facturación SV
+            </a>
+            <div class="d-flex align-items-center">
+                <div id="userInfo"></div>
+                <button class="btn btn-outline-light" onclick="window.location.href='../index.html'">
+                    <i class="bi bi-box-arrow-right"></i> Salir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2">
+                <div class="list-group">
+                    <a href="dashboard.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-house-door"></i> Dashboard
+                    </a>
+                    <a href="clientes.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-people"></i> Clientes
+                    </a>
+                    <a href="productos.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-box-seam"></i> Productos
+                    </a>
+                    <a href="factura-v2.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-text"></i> Nueva Factura
+                    </a>
+                    <a href="ccf-v2.html" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-file-earmark-ruled"></i> Nuevo CCF
+                    </a>
+                    <a href="nota-credito-v2.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-minus"></i> Nota de Crédito
+                    </a>
+                    <a href="lista-dtes.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-ul"></i> Ver DTEs
+                    </a>
+                    <a href="invalidar-dte.html" class="list-group-item list-group-item-action">
+                        <i class="bi bi-x-circle"></i> Invalidar DTE
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulario -->
+            <div class="col-md-10">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-file-earmark-ruled text-success"></i> Nuevo Comprobante de Crédito Fiscal (03)</h2>
+                    <a href="dashboard.html" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+
+                <!-- ALERTA: Cliente obligatorio -->
+                <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        <strong>IMPORTANTE:</strong> El CCF requiere obligatoriamente un cliente válido con NRC
+                    </div>
+                </div>
+
+                <!-- Sección: Cliente OBLIGATORIO -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"> Datos del Cliente (Receptor) - OBLIGATORIO</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="cliente_id" class="form-label">
+                                    Seleccionar Cliente *
+                                    <span class="text-danger">(OBLIGATORIO)</span>
+                                </label>
+                                <select class="form-select" id="cliente_id" required>
+                                    <option value="">Cargando clientes...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="nrc" class="form-label">
+                                    NRC *
+                                    <span class="text-danger">(OBLIGATORIO)</span>
+                                </label>
+                                <input type="text" class="form-control" id="nrc" required placeholder="Ej: 123456-7">
+                                <small class="text-muted">Se autocompleta al seleccionar cliente</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Condiciones de la Operación -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"> Condiciones de la Operación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Condición de Operación *</label>
+                                <select class="form-select" id="condicion_operacion" required>
+                                    <option value="">Cargando...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Forma de Pago *</label>
+                                <select class="form-select" id="forma_pago" required>
+                                    <option value="">Cargando...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Productos -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"> Agregar Productos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="producto_id" class="form-label">Producto *</label>
+                                <select class="form-select" id="producto_id">
+                                    <option value="">Cargando productos...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="cantidad" class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="cantidad" value="1" min="1" step="1">
+                                <small class="text-muted">Solo enteros</small>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Stock Disponible</label>
+                                <input type="text" class="form-control" id="stock_disponible" readonly disabled>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-success w-100" id="btnAgregarProducto">
+                                    <i class="bi bi-plus-circle"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de productos -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Productos Agregados</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Código</th>
+                                        <th>Descripción</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Unit.</th>
+                                        <th>Subtotal</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProductosBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            No hay productos agregados
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totales y botón crear -->
+                <div class="row">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Subtotal:</strong>
+                                    <span id="subtotal">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>IVA (13%):</strong>
+                                    <span id="iva">$0.00</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <h5><strong>TOTAL:</strong></h5>
+                                    <h5 class="text-success"><strong id="total">$0.00</strong></h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="tipo_dte" value="03">
+                        <button class="btn btn-success w-100 btn-lg" id="btnCrearDTE">
+                            <i class="bi bi-check-circle"></i> Crear CCF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/ccf-v2.js"></script>
+</body>
+</html>
