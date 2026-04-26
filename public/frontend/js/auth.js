@@ -1,8 +1,7 @@
-/**
- * Autenticación - Login/Logout
- */
 
-// Verificar si el usuario ya está autenticado (en páginas protegidas)
+//Autenticación - Login/Logout
+
+// Verificar si el usuario ya está autenticado en páginas protegidas
 function verificarAutenticacion() {
     const token = getToken();
     const user = getUserData();
@@ -20,7 +19,7 @@ function verificarAutenticacion() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // Redirigir al login (index.html está en frontend/, no en pages/)
+    // Redirigir al login 
     if (window.location.pathname.includes('/pages/')) {
         window.location.href = '../index.html';
     } else {
@@ -28,7 +27,7 @@ function logout() {
     }
 }
 
-// Manejar formulario de login
+// Para manejar el formulario del login
 if (document.getElementById('loginForm')) {
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -75,7 +74,7 @@ if (document.getElementById('loginForm')) {
     });
 }
 
-// Mostrar información del usuario en navbar (si existe)
+// Mostrar información del usuario en el encabezado
 function mostrarInfoUsuario() {
     const user = getUserData();
     if (!user) return;
@@ -91,7 +90,7 @@ function mostrarInfoUsuario() {
     }
 }
 
-// Ejecutar al cargar la página
+// Cosas a ejecutar al cargar la pagina
 if (window.location.pathname.includes('/pages/')) {
     verificarAutenticacion();
     mostrarInfoUsuario();

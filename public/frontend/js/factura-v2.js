@@ -1,52 +1,17 @@
-/**
- * Factura V2 - Con cliente al vuelo y catálogos
- */
+
+//Factura
 
 let productosSeleccionados = [];
 let clientes = [];
 let productos = [];
-let catalogos = {};
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', async () => {
-    await cargarCatalogos();
     await cargarClientes();
     await cargarProductos();
     configurarEventos();
+    configurarValidacionesClienteNuevo();
 });
-
-// Cargar catálogos de Hacienda
-async function cargarCatalogos() {
-    try {
-        const response = await fetch('/sistema-facturacion-php/public/index.php/api/catalogos', {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        const data = await response.json();
-        catalogos = data.data;
-
-        // Poblar selects de catálogos
-        poblarSelect('cliente_tipo_doc', catalogos.tipo_documento);
-        poblarSelect('condicion_operacion', catalogos.condicion_operacion);
-        poblarSelect('forma_pago', catalogos.forma_pago);
-
-    } catch (error) {
-        console.error('Error cargando catálogos:', error);
-    }
-}
-
-// Poblar select con datos de catálogo
-function poblarSelect(selectId, datos) {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-
-    select.innerHTML = '<option value="">Seleccione...</option>';
-    datos.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.codigo;
-        option.textContent = item.valor;
-        select.appendChild(option);
-    });
-}
 
 // Cargar clientes
 async function cargarClientes() {
@@ -83,6 +48,7 @@ async function cargarProductos() {
             option.textContent = `${producto.codigo} - ${producto.descripcion} ($${producto.precio})`;
             option.dataset.stock = producto.stock;
             option.dataset.precio = producto.precio;
+            option.dataset.tipoItem = producto.tipo_item;
             select.appendChild(option);
         });
     } catch (error) {
@@ -97,12 +63,163 @@ function toggleTipoCliente() {
     document.getElementById('seccionClienteNuevo').style.display = esExistente ? 'none' : 'block';
 }
 
+// Configurar validaciones de cliente nuevo
+function configurarValidacionesClienteNuevo() {
+    const tipoDocSelect = document.getElementById('cliente_tipo_doc');
+    const numDocInput = document.getElementById('cliente_num_doc');
+    const telefonoInput = document.getElementById('cliente_telefono');
+
+    // Cambiar formato cuando cambia tipo documento
+    tipoDocSelect.addEventListener('change', function() {
+        const tipo = this.value;
+        numDocInput.value = '';
+        
+        switch(tipo) {
+            case '36': // NIT
+                numDocInput.placeholder = '0000-000000-000-0';
+                numDocInput.maxLength = 17;
+                break;
+            case '13': // DUI
+                numDocInput.placeholder = '00000000-0';
+                numDocInput.maxLength = 10;
+                break;
+            case '03': // Pasaporte
+                numDocInput.placeholder = 'A12345678';
+                numDocInput.maxLength = 10;
+                break;
+            case '02': // Carnet Residente
+                numDocInput.placeholder = '1234567';
+                numDocInput.maxLength = 10;
+                break;
+            case '37': // Otro
+                numDocInput.placeholder = 'Sin formato';
+                numDocInput.maxLength = 20;
+                break;
+            default:
+                numDocInput.placeholder = '';
+                numDocInput.maxLength = 50;
+        }
+    });
+
+    // Aplicar máscara al escribir
+    numDocInput.addEventListener('input', function() {
+        const tipo = tipoDocSelect.value;
+        aplicarMascaraDocumento(this, tipo);
+    });
+
+    // Aplicar máscara a teléfono
+    telefonoInput.addEventListener('input', function() {
+        aplicarMascaraTelefono(this);
+    });
+}
+
+// Aplicar máscara según tipo de documento
+function aplicarMascaraDocumento(input, tipo) {
+    let valor = input.value;
+    let resultado = '';
+    
+    switch(tipo) {
+        case '36': // NIT: 0000-000000-000-0
+            valor = valor.replace(/[^0-9]/g, '');
+            if (valor.length <= 4) {
+                resultado = valor;
+            } else if (valor.length <= 10) {
+                resultado = valor.substring(0, 4) + '-' + valor.substring(4);
+            } else if (valor.length <= 13) {
+                resultado = valor.substring(0, 4) + '-' + valor.substring(4, 10) + '-' + valor.substring(10);
+            } else {
+                resultado = valor.substring(0, 4) + '-' + valor.substring(4, 10) + '-' + valor.substring(10, 13) + '-' + valor.substring(13, 14);
+            }
+            break;
+            
+        case '13': // DUI: 00000000-0
+            valor = valor.replace(/[^0-9]/g, '');
+            if (valor.length <= 8) {
+                resultado = valor;
+            } else {
+                resultado = valor.substring(0, 8) + '-' + valor.substring(8, 9);
+            }
+            break;
+            
+        case '03': // Pasaporte: A12345678 (1 letra + 7-9 números)
+            valor = valor.replace(/[^A-Za-z0-9]/g, '');
+            if (valor.length === 0) {
+                resultado = '';
+            } else {
+                const letra = valor.charAt(0).toUpperCase();
+                const numeros = valor.substring(1).replace(/[^0-9]/g, '');
+                resultado = letra + numeros.substring(0, 9);
+            }
+            break;
+            
+        case '02': // Carnet Residente: 1234567 (6-10 números)
+            valor = valor.replace(/[^0-9]/g, '');
+            resultado = valor.substring(0, 10);
+            break;
+            
+        case '37': // Otro: sin máscara
+            resultado = valor.substring(0, 20);
+            break;
+            
+        default:
+            resultado = valor;
+    }
+    
+    input.value = resultado;
+}
+
+// Aplicar máscara a teléfono: 0000-0000
+function aplicarMascaraTelefono(input) {
+    let valor = input.value.replace(/[^0-9]/g, '');
+    let resultado = '';
+    
+    if (valor.length <= 4) {
+        resultado = valor;
+    } else {
+        resultado = valor.substring(0, 4) + '-' + valor.substring(4, 8);
+    }
+    
+    input.value = resultado;
+}
+
+// Validar formato de documento
+function validarDocumentoFormato(tipo, documento) {
+    const patrones = {
+        '36': /^\d{4}-\d{6}-\d{3}-\d{1}$/,   // NIT
+        '13': /^\d{8}-\d{1}$/,                // DUI
+        '03': /^[A-Z]\d{7,9}$/,               // Pasaporte: 1 letra + 7-9 nums
+        '02': /^\d{6,10}$/,                   // Carnet: 6-10 números
+        '37': /.{1,20}/                       // Otro: cualquier cosa
+    };
+    
+    return patrones[tipo] ? patrones[tipo].test(documento) : false;
+}
+
+// Validar teléfono
+function validarTelefono(telefono) {
+    if (!telefono || telefono.trim() === '') return true;
+    return /^\d{4}-\d{4}$/.test(telefono);
+}
+
+// Validar email
+function validarEmail(email) {
+    if (!email || email.trim() === '') return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Configurar eventos
 function configurarEventos() {
     // Mostrar stock al seleccionar producto
     document.getElementById('producto_id').addEventListener('change', function() {
-        const stock = this.options[this.selectedIndex]?.dataset.stock || '0';
-        document.getElementById('stock_disponible').value = stock;
+        const selectedOption = this.options[this.selectedIndex];
+        const stock = selectedOption?.dataset.stock || '0';
+        const tipoItem = selectedOption?.dataset.tipoItem || '1';
+        
+        if (tipoItem === '2') {
+            document.getElementById('stock_disponible').value = 'N/A';
+        } else {
+            document.getElementById('stock_disponible').value = stock;
+        }
     });
 
     // Validar cantidad (solo enteros)
@@ -113,14 +230,11 @@ function configurarEventos() {
         }
     });
 
-    // Agregar producto
     document.getElementById('btnAgregarProducto').addEventListener('click', agregarProducto);
-
-    // Crear DTE
     document.getElementById('btnCrearDTE').addEventListener('click', crearDTE);
 }
 
-// Agregar producto a la tabla
+// Agregar producto
 function agregarProducto() {
     const productoId = parseInt(document.getElementById('producto_id').value);
     const cantidad = parseInt(document.getElementById('cantidad').value);
@@ -130,22 +244,20 @@ function agregarProducto() {
         return;
     }
 
-    // Validar que sea entero
     if (cantidad % 1 !== 0) {
-        Swal.fire('Error', 'La cantidad debe ser un número entero (sin decimales)', 'error');
+        Swal.fire('Error', 'La cantidad debe ser un número entero', 'error');
         return;
     }
 
     const producto = productos.find(p => p.id === productoId);
     if (!producto) return;
 
-    // Verificar stock
-    if (cantidad > producto.stock) {
+    // Solo verificar stock para BIENES
+    if (producto.tipo_item === '1' && cantidad > producto.stock) {
         Swal.fire('Error', `Stock insuficiente. Disponible: ${producto.stock}`, 'error');
         return;
     }
 
-    // Verificar si ya existe
     const existe = productosSeleccionados.find(p => p.producto_id === productoId);
     if (existe) {
         Swal.fire('Aviso', 'Este producto ya fue agregado', 'info');
@@ -162,7 +274,6 @@ function agregarProducto() {
 
     actualizarTablaProductos();
 
-    // Limpiar
     document.getElementById('producto_id').value = '';
     document.getElementById('cantidad').value = '1';
     document.getElementById('stock_disponible').value = '';
@@ -220,24 +331,25 @@ function actualizarTablaProductos() {
 
 // Crear DTE
 async function crearDTE() {
-    // Validar productos
     if (productosSeleccionados.length === 0) {
         Swal.fire('Error', 'Debe agregar al menos un producto', 'warning');
         return;
     }
 
-    // Validar condiciones
-    if (!document.getElementById('condicion_operacion').value) {
-        Swal.fire('Error', 'Seleccione condición de operación', 'warning');
+    // Validar condición de operación (CAT-016: 1, 2, 3)
+    const condicion = document.getElementById('condicion_operacion').value;
+    if (!condicion || !['1', '2', '3'].includes(condicion)) {
+        Swal.fire('Error', 'Seleccione condición de operación válida', 'warning');
         return;
     }
 
-    if (!document.getElementById('forma_pago').value) {
-        Swal.fire('Error', 'Seleccione forma de pago', 'warning');
+    // Validar forma de pago
+    const formaPago = document.getElementById('forma_pago').value;
+    if (!formaPago || !['01', '02', '03', '05'].includes(formaPago)) {
+        Swal.fire('Error', 'Seleccione forma de pago válida', 'warning');
         return;
     }
 
-    // Preparar datos del cliente
     let datosCliente = {};
     const esClienteExistente = document.getElementById('clienteExistente').checked;
 
@@ -246,16 +358,49 @@ async function crearDTE() {
         if (clienteId) {
             datosCliente.cliente_id = parseInt(clienteId);
         } else {
-            datosCliente.cliente_id = null; // Factura sin receptor
+            datosCliente.cliente_id = null;
         }
     } else {
-        // Cliente nuevo (al vuelo)
+        // Validar cliente nuevo
         const nombre = document.getElementById('cliente_nombre').value.trim();
         const tipoDoc = document.getElementById('cliente_tipo_doc').value;
         const numDoc = document.getElementById('cliente_num_doc').value.trim();
+        const email = document.getElementById('cliente_email').value.trim();
+        const telefono = document.getElementById('cliente_telefono').value.trim();
 
         if (!nombre || !tipoDoc || !numDoc) {
-            Swal.fire('Error', 'Complete los datos del cliente', 'warning');
+            Swal.fire('Error', 'Complete los datos obligatorios del cliente (Nombre, Tipo Doc, Número Doc)', 'warning');
+            return;
+        }
+
+        // Validar tipo documento 
+        if (!['36', '13', '37', '03', '02'].includes(tipoDoc)) {
+            Swal.fire('Error', 'Tipo de documento inválido', 'warning');
+            return;
+        }
+
+        // Validar formato de documento
+        if (!validarDocumentoFormato(tipoDoc, numDoc)) {
+            const mensajes = {
+                '36': 'NIT debe tener formato: 0000-000000-000-0',
+                '13': 'DUI debe tener formato: 00000000-0',
+                '03': 'Pasaporte: 1 letra mayúscula + 7-9 números (Ej: A12345678)',
+                '02': 'Carnet Residente: 6-10 números (Ej: 1234567)',
+                '37': 'Campo libre (1-20 caracteres)'
+            };
+            Swal.fire('Error de Formato', mensajes[tipoDoc], 'error');
+            return;
+        }
+
+        // Validar email si se proporciona
+        if (email && !validarEmail(email)) {
+            Swal.fire('Error de Formato', 'Email no válido', 'error');
+            return;
+        }
+
+        // Validar teléfono si se proporciona
+        if (telefono && !validarTelefono(telefono)) {
+            Swal.fire('Error de Formato', 'Teléfono debe tener formato: 0000-0000', 'error');
             return;
         }
 
@@ -263,15 +408,14 @@ async function crearDTE() {
             nombre: nombre,
             tipo_documento: tipoDoc,
             num_documento: numDoc,
-            email: document.getElementById('cliente_email').value.trim() || null,
-            telefono: document.getElementById('cliente_telefono').value.trim() || null,
+            email: email || null,
+            telefono: telefono || null,
             direccion: document.getElementById('cliente_direccion').value.trim() || null
         };
 
         datosCliente.guardar_cliente = document.getElementById('guardarCliente').checked;
     }
 
-    // Confirmación
     const confirmacion = await Swal.fire({
         title: '¿Estás seguro?',
         html: '¿Deseas crear esta <strong>Factura</strong>?',
@@ -285,12 +429,11 @@ async function crearDTE() {
 
     if (!confirmacion.isConfirmed) return;
 
-    // Preparar datos
     const datos = {
         tipo_dte: '01',
         ...datosCliente,
-        condicion_operacion: document.getElementById('condicion_operacion').value,
-        forma_pago: document.getElementById('forma_pago').value,
+        condicion_operacion: condicion,
+        forma_pago: formaPago,
         productos: productosSeleccionados
     };
 

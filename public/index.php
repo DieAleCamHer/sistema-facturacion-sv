@@ -6,14 +6,14 @@ use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Configurar zona horaria
+// Para configurar la zona horaria
 date_default_timezone_set('America/El_Salvador');
 
-// IMPORTANTE: Mostrar errores detallados
+// Esto es importante para mostrar errores detallados
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-// Crear aplicación Slim
+// Para crear la aplicación Slim
 $app = AppFactory::create();
 
 // Configurar base path (importante para rutas)

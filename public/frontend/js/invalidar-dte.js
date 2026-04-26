@@ -1,5 +1,6 @@
 /**
  * Invalidar DTE - Sistema de Facturación SV
+ * Usa Catálogo 24 (CAT-024) de Hacienda para tipos de invalidación
  */
 
 let dtesDisponibles = [];
@@ -87,9 +88,11 @@ function mostrarInfoDTE(verificacion, dte) {
     panelInfo.classList.remove('d-none');
 
     if (verificacion.puede_invalidar) {
-        // Puede invalidarse
+        const tiempoLimiteTexto = dte.tipo_dte === '01' ? '3 meses' : '1 día';
+        
         infoContent.innerHTML = `
             <p class="mb-1"><strong>Número de Control:</strong> ${dte.numero_control}</p>
+            <p class="mb-1"><strong>Tipo DTE:</strong> ${getTipoNombre(dte.tipo_dte)}</p>
             <p class="mb-1"><strong>Fecha de Emisión:</strong> ${formatearFecha(dte.creado_en)}</p>
             <p class="mb-1"><strong>Cliente:</strong> ${dte.cliente_nombre || 'Sin cliente'}</p>
             <p class="mb-1"><strong>Total:</strong> $${parseFloat(dte.total).toFixed(2)}</p>
@@ -99,16 +102,16 @@ function mostrarInfoDTE(verificacion, dte) {
                 <strong>Este DTE puede ser invalidado</strong>
             </p>
             <p class="mb-0 text-muted small">
-                Tiempo transcurrido: ${verificacion.horas_transcurridas} horas de ${verificacion.tiempo_limite} permitidas
+                Plazo: ${tiempoLimiteTexto} | Transcurridas: ${verificacion.horas_transcurridas}h de ${verificacion.tiempo_limite}h permitidas
             </p>
         `;
         
         formInvalidacion.classList.remove('d-none');
 
     } else {
-        // NO puede invalidarse
         infoContent.innerHTML = `
             <p class="mb-1"><strong>Número de Control:</strong> ${dte.numero_control}</p>
+            <p class="mb-1"><strong>Tipo DTE:</strong> ${getTipoNombre(dte.tipo_dte)}</p>
             <p class="mb-1"><strong>Fecha de Emisión:</strong> ${formatearFecha(dte.creado_en)}</p>
             <hr class="my-2">
             <p class="mb-0 text-danger">
@@ -127,8 +130,8 @@ function mostrarInfoDTE(verificacion, dte) {
 // Invalidar DTE
 async function invalidarDTE() {
     const dteId = document.getElementById('dte_id').value;
-    const tipoMotivo = document.getElementById('tipoMotivo').value;
-    const motivo = document.getElementById('motivo').value.trim();
+    const tipoInvalidacion = document.getElementById('tipoInvalidacion').value;
+    const motivoDetalle = document.getElementById('motivoDetalle').value.trim();
 
     // Validaciones
     if (!dteId) {
@@ -136,22 +139,34 @@ async function invalidarDTE() {
         return;
     }
 
-    if (!tipoMotivo) {
-        Swal.fire('Error', 'Seleccione el tipo de motivo', 'warning');
+    if (!tipoInvalidacion) {
+        Swal.fire('Error', 'Seleccione el tipo de invalidación', 'warning');
         return;
     }
 
-    if (!motivo) {
-        Swal.fire('Error', 'Ingrese la descripción del motivo', 'warning');
+    if (!motivoDetalle || motivoDetalle.length < 5) {
+        Swal.fire('Error', 'Ingrese la descripción del motivo (mínimo 5 caracteres)', 'warning');
+        return;
+    }
+
+    if (motivoDetalle.length > 250) {
+        Swal.fire('Error', 'La descripción no puede exceder 250 caracteres', 'warning');
         return;
     }
 
     // Confirmación
+    const tipoTexto = {
+        '1': 'Error en la Información del DTE',
+        '2': 'Rescindir de la operación realizada',
+        '3': 'Otro'
+    }[tipoInvalidacion];
+
     const confirmacion = await Swal.fire({
         title: '¿Estás absolutamente seguro?',
         html: `
             <p>Estás a punto de <strong>INVALIDAR</strong> el DTE:</p>
             <p class="text-danger"><strong>${dteSeleccionado.numero_control}</strong></p>
+            <p><strong>Tipo:</strong> ${tipoTexto}</p>
             <p class="text-muted small">Esta acción es <strong>irreversible</strong> y no puede deshacerse.</p>
         `,
         icon: 'warning',
@@ -172,8 +187,6 @@ async function invalidarDTE() {
     showLoading('Invalidando DTE...');
 
     try {
-        const motivoCompleto = `${tipoMotivo}: ${motivo}`;
-
         const response = await fetch(`${API_BASE_URL}/dte/${dteId}/invalidar`, {
             method: 'POST',
             headers: {
@@ -181,7 +194,8 @@ async function invalidarDTE() {
                 'Authorization': `Bearer ${getToken()}`
             },
             body: JSON.stringify({
-                motivo: motivoCompleto
+                tipo_invalidacion: parseInt(tipoInvalidacion),
+                motivo: motivoDetalle
             })
         });
 
@@ -202,7 +216,6 @@ async function invalidarDTE() {
             confirmButtonText: 'Ver DTEs'
         });
 
-        // Redirigir
         window.location.href = 'lista-dtes.html';
 
     } catch (error) {

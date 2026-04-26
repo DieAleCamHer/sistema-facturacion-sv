@@ -132,7 +132,7 @@ class ClienteController
 
     /**
      * POST /api/clientes/crear-o-actualizar
-     * Crear cliente "al vuelo" o actualizar si ya existe
+     * Crear cliente en el momento o actualizar si ya existe
      */
     public function crearOActualizar(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {

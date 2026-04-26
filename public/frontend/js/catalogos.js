@@ -1,5 +1,5 @@
 /**
- * Helper Functions para Catálogos de Hacienda
+ * Helper Functions para Catálogos de hacienda
  * Funciones reutilizables para cargar y manejar catálogos
  */
 
@@ -225,25 +225,3 @@ const Catalogos = {
         ONZA: '63'
     }
 };
-
-/**
- * EJEMPLO DE USO:
- * 
- * // Cargar catálogos al iniciar la página
- * document.addEventListener('DOMContentLoaded', async () => {
- *     await inicializarCatalogosFormulario({
- *         'cliente_tipo_doc': 'tipo_documento',
- *         'condicion_operacion': 'condicion_operacion',
- *         'forma_pago': 'forma_pago'
- *     });
- * });
- * 
- * // Validar antes de enviar
- * if (!validarSelectCatalogo('forma_pago', 'forma de pago')) {
- *     return;
- * }
- * 
- * // Obtener valor de catálogo
- * const nombreFormaPago = obtenerValorCatalogo('forma_pago', '01');
- * console.log(nombreFormaPago); // "Billetes y monedas"
- */

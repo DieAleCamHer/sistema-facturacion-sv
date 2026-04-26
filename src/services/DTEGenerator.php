@@ -7,7 +7,7 @@ use App\Models\Producto;
 
 /**
  * Servicio DTEGenerator
- * Genera JSON de DTEs según schemas oficiales de Hacienda
+ * Genera JSON de DTEs según schemas oficiales
  */
 class DTEGenerator
 {
@@ -22,11 +22,6 @@ class DTEGenerator
         $this->productoModel = new Producto();
     }
 
-    /**
-     * Generar UUID v4 para codigo_generacion
-     * 
-     * @return string
-     */
     public function generarCodigoGeneracion(): string
     {
         return sprintf(
@@ -39,26 +34,11 @@ class DTEGenerator
         );
     }
 
-    /**
-     * Generar numero_control
-     * Formato: DTE-[TIPO]-CAJA[###]-[########]
-     * 
-     * @param string $tipoDTE
-     * @param int $numeroCaja
-     * @param int $correlativo
-     * @return string
-     */
     public function generarNumeroControl(string $tipoDTE, int $numeroCaja, int $correlativo): string
     {
         return sprintf('DTE-%s-CAJA%03d-%08d', $tipoDTE, $numeroCaja, $correlativo);
     }
 
-    /**
-     * Generar JSON de Factura (01)
-     * 
-     * @param array $datos
-     * @return array
-     */
     public function generarFactura(array $datos): array
     {
         $cliente = $this->clienteModel->findById($datos['cliente_id']);
@@ -107,10 +87,16 @@ class DTEGenerator
         $ivaTotal = round($subtotalGeneral * 0.13, 2);
         $totalPagar = $subtotalGeneral + $ivaTotal;
 
+        
+        $condicionOperacion = (int) ($datos['condicion_operacion'] ?? 1);
+        
+        
+        $formaPago = $datos['forma_pago'] ?? '01';
+
         $dte = [
             'identificacion' => [
                 'version' => 1,
-                'ambiente' => '00', // Simulado
+                'ambiente' => '00',
                 'tipoDte' => '01',
                 'numeroControl' => $datos['numero_control'],
                 'codigoGeneracion' => $datos['codigo_generacion'],
@@ -187,10 +173,10 @@ class DTEGenerator
                 'totalPagar' => $totalPagar,
                 'totalLetras' => $this->numeroALetras($totalPagar),
                 'saldoFavor' => 0,
-                'condicionOperacion' => 1, // Contado
+                'condicionOperacion' => $condicionOperacion, 
                 'pagos' => [
                     [
-                        'codigo' => '01',
+                        'codigo' => $formaPago, 
                         'montoPago' => $totalPagar,
                         'referencia' => null,
                         'plazo' => null,
@@ -206,66 +192,39 @@ class DTEGenerator
         return $dte;
     }
 
-    /**
-     * Generar JSON de CCF (03)
-     * Similar a Factura pero con más campos de crédito fiscal
-     */
     public function generarCCF(array $datos): array
     {
-        // La estructura es muy similar a Factura
-        // Por brevedad, usa la misma base
         $dte = $this->generarFactura($datos);
-        
-        // Cambiar tipo
         $dte['identificacion']['tipoDte'] = '03';
-        
         return $dte;
     }
 
-    /**
-     * Generar JSON de Nota de Crédito (05)
-     * 
-     * @param array $datos
-     * @return array
-     */
     public function generarNotaCredito(array $datos): array
-{
-    // Obtener el DTE original que se está creditando
-    $dteModel = new \App\Models\DTE();
-    $dteOriginal = $dteModel->findById($datos['dte_relacionado_id']); // ← CAMBIO AQUÍ
-    
-    if (!$dteOriginal) {
-        throw new \Exception("DTE original no encontrado");
+    {
+        $dteModel = new \App\Models\DTE();
+        $dteOriginal = $dteModel->findById($datos['dte_relacionado_id']);
+        
+        if (!$dteOriginal) {
+            throw new \Exception("DTE original no encontrado");
+        }
+
+        $nc = $this->generarFactura($datos);
+        $nc['identificacion']['tipoDte'] = '05';
+        
+        $nc['documentoRelacionado'] = [
+            [
+                'tipoDocumento' => $dteOriginal['tipo_dte'],
+                'tipoGeneracion' => 1,
+                'numeroDocumento' => $dteOriginal['numero_control'],
+                'fechaEmision' => date('Y-m-d', strtotime($dteOriginal['creado_en'])),
+            ]
+        ];
+
+        return $nc;
     }
 
-    // Usar misma base de factura
-    $nc = $this->generarFactura($datos);
-    
-    // Cambiar tipo
-    $nc['identificacion']['tipoDte'] = '05';
-    
-    // Agregar documento relacionado
-    $nc['documentoRelacionado'] = [
-        [
-            'tipoDocumento' => $dteOriginal['tipo_dte'],
-            'tipoGeneracion' => 1,
-            'numeroDocumento' => $dteOriginal['numero_control'],
-            'fechaEmision' => date('Y-m-d', strtotime($dteOriginal['creado_en'])),
-        ]
-    ];
-
-    return $nc;
-}
-
-    /**
-     * Convertir número a letras (simplificado)
-     * 
-     * @param float $numero
-     * @return string
-     */
     private function numeroALetras(float $numero): string
     {
-        // Implementación simplificada
         $entero = floor($numero);
         $decimales = round(($numero - $entero) * 100);
         

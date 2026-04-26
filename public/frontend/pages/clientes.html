@@ -116,15 +116,17 @@
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Tipo Documento *</label>
                                 <select class="form-select" id="tipo_documento" required>
-                                    <option value="13">DUI</option>
                                     <option value="36">NIT</option>
-                                    <option value="37">Pasaporte</option>
-                                    <option value="2">Carnet Residente</option>
+                                    <option value="13">DUI</option>
+                                    <option value="37">Otro</option>
+                                    <option value="03">Pasaporte</option>
+                                    <option value="02">Carnet de Residente</option>
                                 </select>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Número Documento *</label>
                                 <input type="text" class="form-control" id="num_documento" required>
+                                <div class="form-text" id="helpDocumento">Formato: 0000-000000-000-0</div>
                             </div>
                         </div>
 
@@ -132,6 +134,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">NRC</label>
                                 <input type="text" class="form-control" id="nrc" placeholder="Opcional">
+                                <div class="form-text">Formato: 000000-0</div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Email</label>
@@ -140,6 +143,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono" placeholder="Opcional">
+                                <div class="form-text">Formato: 0000-0000</div>
                             </div>
                         </div>
 

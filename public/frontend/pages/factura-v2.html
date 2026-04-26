@@ -68,7 +68,7 @@
                 <!-- Sección: Cliente -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"> Datos del Cliente (Receptor)</h5>
+                        <h5 class="mb-0">Datos del Cliente (Receptor)</h5>
                     </div>
                     <div class="card-body">
                         <!-- Opción: Cliente existente o nuevo -->
@@ -95,12 +95,12 @@
                                     <select class="form-select" id="cliente_id">
                                         <option value="">Cargando clientes...</option>
                                     </select>
-                                    <small class="text-muted">Factura puede emitirse sin datos del receptor (null)</small>
+                                    
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Cliente nuevo (al vuelo) -->
+                        <!-- Cliente nuevo -->
                         <div id="seccionClienteNuevo" style="display: none;">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -110,7 +110,12 @@
                                 <div class="col-md-3">
                                     <label class="form-label">Tipo Documento *</label>
                                     <select class="form-select" id="cliente_tipo_doc">
-                                        <!-- Se carga dinámicamente desde catálogo 13 -->
+                                        <option value="">Seleccione...</option>
+                                        <option value="36">NIT</option>
+                                        <option value="13">DUI</option>
+                                        <option value="37">Otro</option>
+                                        <option value="03">Pasaporte</option>
+                                        <option value="02">Carnet de Residente</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -143,20 +148,27 @@
                 <!-- Sección: Condiciones de la Operación -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"> Condiciones de la Operación</h5>
+                        <h5 class="mb-0">Condiciones de la Operación</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Condición de Operación *</label>
-                                <select class="form-select" id="condicion_operacion">
-                                    <!-- Se carga dinámicamente desde catálogo 17 -->
+                                <select class="form-select" id="condicion_operacion" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="1">Contado</option>
+                                    <option value="2">A crédito</option>
+                                    <option value="3">Otro</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Forma de Pago *</label>
-                                <select class="form-select" id="forma_pago">
-                                    <!-- Se carga dinámicamente desde catálogo 18 -->
+                                <select class="form-select" id="forma_pago" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="01">Billetes y monedas</option>
+                                    <option value="02">Tarjeta Débito</option>
+                                    <option value="03">Tarjeta Crédito</option>
+                                    <option value="05">Transferencia-Depósito Bancario</option>
                                 </select>
                             </div>
                         </div>
@@ -166,7 +178,7 @@
                 <!-- Sección: Productos -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-info text-white">
-                        <h5 class="mb-0"> Agregar Productos</h5>
+                        <h5 class="mb-0">Agregar Productos</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">

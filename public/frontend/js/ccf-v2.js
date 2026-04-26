@@ -51,6 +51,7 @@ async function cargarProductos() {
             option.dataset.descripcion = producto.descripcion;
             option.dataset.precio = producto.precio;
             option.dataset.stock = producto.stock;
+            option.dataset.tipoItem = producto.tipo_item; // AGREGADO
             select.appendChild(option);
         });
     } catch (error) {
@@ -101,7 +102,14 @@ function configurarEventos() {
     document.getElementById('producto_id').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const stock = selectedOption.dataset.stock || 0;
-        document.getElementById('stock_disponible').value = stock;
+        const tipoItem = selectedOption.dataset.tipoItem || '1';
+        
+        // Si es servicio, mostrar N/A
+        if (tipoItem === '2') {
+            document.getElementById('stock_disponible').value = 'N/A';
+        } else {
+            document.getElementById('stock_disponible').value = stock;
+        }
     });
     
     // Agregar producto
@@ -133,8 +141,10 @@ function agregarProducto() {
     
     const selectedOption = document.getElementById('producto_id').options[document.getElementById('producto_id').selectedIndex];
     const stock = parseInt(selectedOption.dataset.stock);
+    const tipoItem = selectedOption.dataset.tipoItem; // AGREGADO
     
-    if (cantidad > stock) {
+    // CORRECCIÓN: Solo validar stock para BIENES (tipo_item = '1')
+    if (tipoItem === '1' && cantidad > stock) {
         Swal.fire('Error', `Stock insuficiente. Disponible: ${stock}`, 'error');
         return;
     }

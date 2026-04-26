@@ -7,7 +7,7 @@ use App\Controllers\ClienteController;
 use App\Controllers\ProductoController;
 use App\Controllers\CatalogoController;
 use App\Controllers\InvalidacionController;
-use App\Middlewares\AuthMiddleware;  // ← CON 'S' (PLURAL)
+use App\Middlewares\AuthMiddleware;
 use Slim\App;
 
 return function (App $app) {
@@ -29,14 +29,12 @@ return function (App $app) {
     // Grupo de rutas de API
     $app->group('/api', function (RouteCollectorProxy $group) {
         
-        // ========================================
         // AUTENTICACIÓN (sin middleware)
-        // ========================================
+        
         $group->post('/login', [AuthController::class, 'login']);
 
-        // ========================================
         // RUTAS PROTEGIDAS (requieren autenticación)
-        // ========================================
+        
         $group->group('', function (RouteCollectorProxy $protected) {
             
             // CLIENTES

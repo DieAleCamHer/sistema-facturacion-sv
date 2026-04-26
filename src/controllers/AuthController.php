@@ -8,9 +8,9 @@ use App\Utils\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Controlador de Autenticación
- */
+
+// Controlador de Autenticación
+
 class AuthController
 {
     private $usuarioModel;

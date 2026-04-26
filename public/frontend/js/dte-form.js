@@ -1,6 +1,5 @@
 /**
  * Lógica compartida para formularios de DTEs
- * (Factura, CCF, Nota de Crédito)
  */
 
 let productosSeleccionados = [];
@@ -183,7 +182,7 @@ async function crearDTE() {
         '05': 'Nota de Crédito'
     }[tipoDTE];
 
-    // ⭐ CONFIRMACIÓN - Requisito del profesor
+    // CONFIRMACIÓN - Requisito del profesor
     const confirmacion = await Swal.fire({
         title: '¿Estás seguro?',
         html: `¿Deseas crear esta <strong>${nombreDocumento}</strong>?<br>

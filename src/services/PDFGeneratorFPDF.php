@@ -214,7 +214,7 @@ class PDFGeneratorFPDF
         $pdf->SetFont('Arial', 'I', 8);
         $pdf->SetTextColor(100, 100, 100);
         $pdf->Cell(0, 4, $this->convertir('Documento Tributario Electrónico - Sistema de Facturación'), 0, 1, 'C');
-        $pdf->Cell(0, 4, $this->convertir('Este documento tiene validez legal'), 0, 1, 'C');
+        $pdf->Cell(0, 4, $this->convertir('Este documento no tiene validez legal. Es simulado'), 0, 1, 'C');
     }
 
     /**

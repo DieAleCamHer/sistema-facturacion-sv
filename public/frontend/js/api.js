@@ -1,29 +1,26 @@
-/**
- * API Client para Sistema de Facturación SV
- * Maneja todas las peticiones HTTP al backend
- */
 
-// IMPORTANTE: Ajusta esta URL según tu instalación
+ // API Client
+ // Maneja todas las peticiones HTTP para mandarselas al backend
+
+
+// URL
 const API_BASE_URL = '/sistema-facturacion-php/public/index.php/api';
 
-/**
- * Obtener token de autenticación
- */
+// Funcion para obtener el token de autenticacion
 function getToken() {
     return localStorage.getItem('token');
 }
 
-/**
- * Obtener datos del usuario del localStorage
- */
+
+// Funcion para obtener datos del usuario del localstorage
 function getUserData() {
     const userData = localStorage.getItem('user');
     return userData ? JSON.parse(userData) : null;
 }
 
-/**
- * Petición HTTP genérica
- */
+
+// Petición HTTP
+
 async function apiRequest(endpoint, options = {}) {
     const token = getToken();
     
@@ -58,13 +55,10 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// ==========================================
-// API DE AUTENTICACIÓN
-// ==========================================
+// Api de autenticación
 const AuthAPI = {
-    /**
-     * Iniciar sesión
-     */
+    
+    //Iniciar sesión
     login: (email, password) => {
         return apiRequest('/login', {
             method: 'POST',
@@ -73,13 +67,12 @@ const AuthAPI = {
     }
 };
 
-// ==========================================
 // API DE DTEs
-// ==========================================
+
 const DTEsAPI = {
-    /**
-     * Crear nuevo DTE
-     */
+
+    //Crear nuevo DTE
+
     crear: (datos) => {
         return apiRequest('/dte', {
             method: 'POST',
@@ -87,23 +80,21 @@ const DTEsAPI = {
         });
     },
 
-    /**
-     * Listar todos los DTEs
-     */
+    // Listar todos los DTEs
+
     listar: () => {
         return apiRequest('/dte');
     },
 
-    /**
-     * Obtener DTE por ID
-     */
+
+    // Obtener DTE por ID
+
     obtener: (id) => {
         return apiRequest(`/dte/${id}`);
     },
 
-    /**
-     * Invalidar DTE
-     */
+    // Invalidar DTE
+
     invalidar: (id, motivo) => {
         return apiRequest(`/dte/${id}/invalidar`, {
             method: 'POST',
@@ -111,9 +102,8 @@ const DTEsAPI = {
         });
     },
 
-    /**
-     * Descargar PDF
-     */
+    // Descargar PDF
+
     descargarPDF: (id) => {
         const token = getToken();
         window.open(
@@ -123,20 +113,19 @@ const DTEsAPI = {
     }
 };
 
-// ==========================================
 // API DE CLIENTES
-// ==========================================
+
 const ClientesAPI = {
-    /**
-     * Listar todos los clientes
-     */
+    
+    // Listar todos los clientes
+    
     listar: () => {
         return apiRequest('/clientes');
     },
 
-    /**
-     * Crear nuevo cliente
-     */
+    
+    // Crear nuevo cliente
+    
     crear: (datos) => {
         return apiRequest('/clientes', {
             method: 'POST',
@@ -144,16 +133,16 @@ const ClientesAPI = {
         });
     },
 
-    /**
-     * Obtener cliente por ID
-     */
+    
+    // Obtener cliente por ID
+    
     obtener: (id) => {
         return apiRequest(`/clientes/${id}`);
     },
 
-    /**
-     * Actualizar cliente
-     */
+    
+    // Actualizar cliente
+    
     actualizar: (id, datos) => {
         return apiRequest(`/clientes/${id}`, {
             method: 'PUT',
@@ -161,18 +150,18 @@ const ClientesAPI = {
         });
     },
 
-    /**
-     * Eliminar cliente
-     */
+    
+    // Eliminar cliente
+
     eliminar: (id) => {
         return apiRequest(`/clientes/${id}`, {
             method: 'DELETE'
         });
     },
 
-    /**
-     * Crear o actualizar cliente (para clientes "al vuelo")
-     */
+    
+    // Crear o actualizar cliente para crear clientes en el momento
+    
     crearOActualizar: (datos) => {
         return apiRequest('/clientes/crear-o-actualizar', {
             method: 'POST',
@@ -181,20 +170,19 @@ const ClientesAPI = {
     }
 };
 
-// ==========================================
 // API DE PRODUCTOS
-// ==========================================
+
 const ProductosAPI = {
-    /**
-     * Listar todos los productos
-     */
+
+    // Listar todos los productos
+    
     listar: () => {
         return apiRequest('/productos');
     },
 
-    /**
-     * Crear nuevo producto
-     */
+    
+    // Crear nuevo producto
+
     crear: (datos) => {
         return apiRequest('/productos', {
             method: 'POST',
@@ -202,16 +190,15 @@ const ProductosAPI = {
         });
     },
 
-    /**
-     * Obtener producto por ID
-     */
+    
+    // Obtener producto por ID
+
     obtener: (id) => {
         return apiRequest(`/productos/${id}`);
     },
 
-    /**
-     * Actualizar producto
-     */
+    // Actualizar producto
+
     actualizar: (id, datos) => {
         return apiRequest(`/productos/${id}`, {
             method: 'PUT',
@@ -219,9 +206,8 @@ const ProductosAPI = {
         });
     },
 
-    /**
-     * Eliminar producto
-     */
+    // Eliminar producto
+
     eliminar: (id) => {
         return apiRequest(`/productos/${id}`, {
             method: 'DELETE'
@@ -229,33 +215,29 @@ const ProductosAPI = {
     }
 };
 
-// ==========================================
-// API DE CATÁLOGOS DE HACIENDA (Módulo 2)
-// ==========================================
+// API DE CATÁLOGOS DE HACIENDA
+
 const CatalogosAPI = {
-    /**
-     * Obtener todos los catálogos organizados por tipo
-     */
+    
+    // Obtener todos los catálogos organizados por tipo
+    
     obtenerTodos: () => {
         return apiRequest('/catalogos');
     },
 
-    /**
+    /** 
      * Obtener catálogo por tipo específico
      * @param {number} tipo - Tipo de catálogo (13, 17, 18, 19, 20)
-     */
+    */
     obtenerPorTipo: (tipo) => {
         return apiRequest(`/catalogos/${tipo}`);
     }
 };
 
-// ==========================================
 // FUNCIONES AUXILIARES
-// ==========================================
 
-/**
- * Formatear moneda
- */
+// Formatear moneda
+
 function formatearMoneda(valor) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -263,9 +245,9 @@ function formatearMoneda(valor) {
     }).format(valor);
 }
 
-/**
- * Mostrar loading
- */
+
+// Mostrar loading
+
 function showLoading(mensaje = 'Procesando...') {
     Swal.fire({
         title: mensaje,
@@ -276,9 +258,9 @@ function showLoading(mensaje = 'Procesando...') {
     });
 }
 
-/**
- * Ocultar loading
- */
+
+// Ocultar loading
+
 function hideLoading() {
     Swal.close();
 }

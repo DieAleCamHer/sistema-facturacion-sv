@@ -68,7 +68,9 @@
                 <!-- Alerta informativa -->
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle"></i>
-                    <strong>Importante:</strong> Solo puede invalidar DTEs dentro de las primeras <strong>72 horas</strong> desde su emisión.
+                    <strong>Plazos de Invalidación:</strong> 
+                    Factura <strong>3 meses</strong>, 
+                    CCF y Nota de Crédito <strong>1 día</strong> desde su emisión.
                 </div>
 
                 <!-- Formulario -->
@@ -106,23 +108,23 @@
                             <h6 class="mb-3">Motivo de la Invalidación</h6>
                             
                             <div class="mb-3">
-                                <label for="tipoMotivo" class="form-label">Tipo de Motivo *</label>
-                                <select class="form-select" id="tipoMotivo">
+                                <label for="tipoInvalidacion" class="form-label">Tipo de Invalidación *</label>
+                                <select class="form-select" id="tipoInvalidacion">
                                     <option value="">Seleccione...</option>
-                                    <option value="Error en datos del cliente">Error en datos del cliente</option>
-                                    <option value="Error en productos">Error en productos</option>
-                                    <option value="Error en montos">Error en montos</option>
-                                    <option value="Duplicado">Duplicado</option>
-                                    <option value="Cancelación de venta">Cancelación de venta</option>
-                                    <option value="Otro">Otro</option>
+                                    <option value="1">1 - Error en la Información del DTE</option>
+                                    <option value="2">2 - Rescindir de la operación realizada</option>
+                                    <option value="3">3 - Otro</option>
                                 </select>
                             </div>
 
                             <div class="mb-3">
-                                <label for="motivo" class="form-label">Descripción Detallada *</label>
-                                <textarea class="form-control" id="motivo" rows="4" 
-                                          placeholder="Describa detalladamente el motivo de la invalidación..."
+                                <label for="motivoDetalle" class="form-label">Descripción Detallada del Motivo *</label>
+                                <textarea class="form-control" id="motivoDetalle" rows="4" 
+                                          placeholder="Describa detalladamente el motivo de la invalidación (mínimo 5 caracteres, máximo 250)..."
+                                          minlength="5"
+                                          maxlength="250"
                                           required></textarea>
+                                <small class="text-muted">5-250 caracteres</small>
                             </div>
 
                             <div class="alert alert-danger">

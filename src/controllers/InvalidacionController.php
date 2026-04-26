@@ -17,24 +17,38 @@ class InvalidacionController
     private $dteModel;
     private $eventoModel;
     private $dteGenerator;
-    private $config;
 
     public function __construct()
     {
         $this->dteModel = new DTE();
         $this->eventoModel = new EventoInvalidacion();
         $this->dteGenerator = new DTEGenerator();
-        $this->config = require __DIR__ . '/../../config/config.php';
     }
 
     /**
-     * Verificar si un DTE puede ser invalidado
-     * 
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param array $args
-     * @return ResponseInterface
+     * Obtener tiempo límite según tipo de DTE
+     * - Factura (01): 3 meses = 2160 horas
+     * - CCF (03): 1 día = 24 horas
+     * - Nota Crédito (05): 1 día = 24 horas
      */
+    private function obtenerTiempoLimite(string $tipoDte): int
+    {
+        return match($tipoDte) {
+            '01' => 2160,    // Factura: 3 meses
+            '03' => 24,      // CCF: 1 día
+            '05' => 24,      // Nota Crédito: 1 día
+            default => 72
+        };
+    }
+
+    /**
+     * Validar tipo de invalidación según CAT-024
+     */
+    private function validarTipoInvalidacion(int $tipo): bool
+    {
+        return in_array($tipo, [1, 2, 3]);
+    }
+
     public function puedeInvalidar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $dteId = (int) $args['id'];
@@ -46,7 +60,6 @@ class InvalidacionController
                 return Response::error($response, 'DTE no encontrado', 404);
             }
 
-            // Verificar estado
             if ($dte['estado'] !== 'procesado') {
                 return Response::success($response, [
                     'puede_invalidar' => false,
@@ -54,22 +67,27 @@ class InvalidacionController
                 ]);
             }
 
-            // Verificar tiempo límite (72 horas según normativa)
-            $tiempoLimite = $this->config['invalidacion']['tiempo_limite_horas'] ?? 72;
+            $tiempoLimite = $this->obtenerTiempoLimite($dte['tipo_dte']);
             $horasTranscurridas = (time() - strtotime($dte['creado_en'])) / 3600;
 
             if ($horasTranscurridas > $tiempoLimite) {
+                $nombreDte = match($dte['tipo_dte']) {
+                    '01' => 'Factura (3 meses)',
+                    '03' => 'CCF (1 día)',
+                    '05' => 'Nota de Crédito (1 día)',
+                    default => 'DTE'
+                };
+                
                 return Response::success($response, [
                     'puede_invalidar' => false,
-                    'razon' => "Fuera de tiempo límite ({$tiempoLimite} horas). Han transcurrido " . round($horasTranscurridas) . " horas"
+                    'razon' => "Fuera de plazo para {$nombreDte}. Transcurridas: " . round($horasTranscurridas) . "h"
                 ]);
             }
 
-            // Verificar si ya tiene evento de invalidación
             if ($this->eventoModel->existeEvento($dteId)) {
                 return Response::success($response, [
                     'puede_invalidar' => false,
-                    'razon' => 'Ya existe un evento de invalidación para este DTE'
+                    'razon' => 'Ya existe un evento de invalidación'
                 ]);
             }
 
@@ -84,12 +102,6 @@ class InvalidacionController
         }
     }
 
-    /**
-     * Verificar internamente si puede invalidarse (sin response)
-     * 
-     * @param int $dteId
-     * @return array ['puede' => bool, 'razon' => string]
-     */
     private function verificarValidez(int $dteId): array
     {
         $dte = $this->dteModel->findById($dteId);
@@ -98,38 +110,24 @@ class InvalidacionController
             return ['puede' => false, 'razon' => 'DTE no encontrado'];
         }
 
-        // Verificar estado
         if ($dte['estado'] !== 'procesado') {
-            return ['puede' => false, 'razon' => 'El DTE no está en estado procesado'];
+            return ['puede' => false, 'razon' => 'DTE no procesado'];
         }
 
-        // Verificar tiempo límite
-        $tiempoLimite = $this->config['invalidacion']['tiempo_limite_horas'] ?? 72;
+        $tiempoLimite = $this->obtenerTiempoLimite($dte['tipo_dte']);
         $horasTranscurridas = (time() - strtotime($dte['creado_en'])) / 3600;
 
         if ($horasTranscurridas > $tiempoLimite) {
-            return [
-                'puede' => false, 
-                'razon' => "Fuera de tiempo límite ({$tiempoLimite} horas). Han transcurrido " . round($horasTranscurridas) . " horas"
-            ];
+            return ['puede' => false, 'razon' => 'Fuera de plazo'];
         }
 
-        // Verificar si ya tiene evento
         if ($this->eventoModel->existeEvento($dteId)) {
-            return ['puede' => false, 'razon' => 'Ya existe un evento de invalidación para este DTE'];
+            return ['puede' => false, 'razon' => 'Ya invalidado'];
         }
 
         return ['puede' => true, 'razon' => ''];
     }
 
-    /**
-     * Invalidar un DTE
-     * 
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param array $args
-     * @return ResponseInterface
-     */
     public function invalidar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $dteId = (int) $args['id'];
@@ -137,32 +135,45 @@ class InvalidacionController
         $user = $request->getAttribute('user');
 
         try {
-            // Validar motivo
-            if (empty($data['motivo'])) {
-                return Response::error($response, 'El motivo es requerido', 400);
+            // Validar campos requeridos
+            if (empty($data['tipo_invalidacion'])) {
+                return Response::error($response, 'Tipo de invalidación requerido', 400);
             }
 
-            // Obtener DTE
+            if (empty($data['motivo'])) {
+                return Response::error($response, 'Motivo requerido', 400);
+            }
+
+            // Validar tipo según CAT-024
+            $tipoInvalidacion = (int) $data['tipo_invalidacion'];
+            if (!$this->validarTipoInvalidacion($tipoInvalidacion)) {
+                return Response::error($response, 'Tipo de invalidación inválido. Debe ser 1, 2 o 3 (CAT-024)', 400);
+            }
+
+            // Validar longitud del motivo
+            if (strlen($data['motivo']) < 5 || strlen($data['motivo']) > 250) {
+                return Response::error($response, 'El motivo debe tener entre 5 y 250 caracteres', 400);
+            }
+
             $dte = $this->dteModel->findById($dteId);
             
             if (!$dte) {
                 return Response::error($response, 'DTE no encontrado', 404);
             }
 
-            // Verificar que puede invalidarse (SIN generar response)
             $verificacion = $this->verificarValidez($dteId);
             
             if (!$verificacion['puede']) {
                 return Response::error($response, $verificacion['razon'], 400);
             }
 
-            // Generar evento de invalidación
             $codigoEvento = $this->dteGenerator->generarCodigoGeneracion();
             
+            // Generar JSON del evento según schema oficial
             $jsonEvento = [
                 'identificacion' => [
                     'version' => 1,
-                    'ambiente' => '00', // 00 = Pruebas
+                    'ambiente' => '00',
                     'codigoGeneracion' => $codigoEvento,
                     'fecEmi' => date('Y-m-d'),
                     'horEmi' => date('H:i:s'),
@@ -179,13 +190,13 @@ class InvalidacionController
                     'fecEmi' => date('Y-m-d', strtotime($dte['creado_en'])),
                     'montoIva' => (float) $dte['iva'],
                     'codigoGeneracionR' => null,
-                    'tipoInvalidacion' => 1, // 1 = Emisor, 2 = Receptor
+                    'tipoInvalidacion' => 1,
                 ],
                 'motivo' => [
-                    'tipoAnulacion' => 1,
+                    'tipoAnulacion' => $tipoInvalidacion, // CAT-024: 1, 2 o 3
                     'motivoAnulacion' => $data['motivo'],
-                    'nombreResponsable' => isset($user->nombre) ? $user->nombre : 'Sistema',
-                    'tipDocResponsable' => '36', // NIT
+                    'nombreResponsable' => $user->nombre ?? 'Sistema',
+                    'tipDocResponsable' => '36',
                     'numDocResponsable' => '06142023471012',
                 ]
             ];
@@ -194,6 +205,7 @@ class InvalidacionController
             $eventoId = $this->eventoModel->crear([
                 'dte_id' => $dteId,
                 'usuario_id' => $user->user_id,
+                'tipo_invalidacion' => $tipoInvalidacion,
                 'motivo' => $data['motivo'],
                 'fecha_evento' => date('Y-m-d H:i:s'),
                 'json_evento' => json_encode($jsonEvento),
@@ -208,6 +220,7 @@ class InvalidacionController
                 'mensaje' => 'DTE invalidado exitosamente',
                 'evento_id' => $eventoId,
                 'codigo_evento' => $codigoEvento,
+                'tipo_invalidacion' => $tipoInvalidacion,
                 'dte_id' => $dteId
             ]);
 

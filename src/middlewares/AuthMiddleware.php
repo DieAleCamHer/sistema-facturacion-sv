@@ -11,7 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Middleware de Autenticación JWT
- * Verifica que el token sea válido en rutas protegidas
+ * Verificar token en rutas protegidas
  */
 class AuthMiddleware implements MiddlewareInterface
 {

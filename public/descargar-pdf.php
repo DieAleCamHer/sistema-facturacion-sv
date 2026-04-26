@@ -1,5 +1,5 @@
 <?php
-error_reporting(0); // Ocultar warnings que pueden corromper el PDF
+error_reporting(0); // Para ocultar los warnings que pueden romper el pdf
 
 $id = $_GET['id'] ?? null;
 

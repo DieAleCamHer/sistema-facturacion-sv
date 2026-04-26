@@ -41,7 +41,7 @@ class Database
     }
 
     /**
-     * Obtener instancia única (Singleton)
+     * Obtener instancia única Singleton
      */
     public static function getInstance(): self
     {

@@ -55,7 +55,6 @@ class Cliente
      */
     public function crear($data)
     {
-        // Verificar si ya existe
         if ($this->findByDocumento($data['num_documento'])) {
             throw new \Exception('Ya existe un cliente con ese número de documento');
         }
@@ -85,7 +84,6 @@ class Cliente
      */
     public function actualizar($id, $data)
     {
-        // Verificar si el documento ya existe en otro cliente
         $existente = $this->findByDocumento($data['num_documento']);
         if ($existente && $existente['id'] != $id) {
             throw new \Exception('Ya existe otro cliente con ese número de documento');
@@ -117,7 +115,6 @@ class Cliente
      */
     public function eliminar($id)
     {
-        // Verificar que no tenga DTEs asociados
         $sql = "SELECT COUNT(*) FROM dte WHERE cliente_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
@@ -132,18 +129,16 @@ class Cliente
     }
 
     /**
-     * Crear o actualizar cliente (para clientes "al vuelo")
+     * Crear o actualizar cliente
      */
     public function crearOActualizar($data)
     {
         $existente = $this->findByDocumento($data['num_documento']);
         
         if ($existente) {
-            // Actualizar datos si cambió algo
             $this->actualizar($existente['id'], $data);
             return $existente['id'];
         } else {
-            // Crear nuevo
             return $this->crear($data);
         }
     }
