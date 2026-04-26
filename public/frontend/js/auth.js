@@ -8,8 +8,13 @@ function verificarAutenticacion() {
 
     if (!token || !user) {
         // Redirigir al login
-        window.location.href = 'index.html';
-        return false;
+        if (window.location.pathname.includes('/pages/')) {
+            window.location.href = '../index.html';
+            return false;
+        } else {
+            window.location.href = 'index.html';
+            return false;
+        }
     }
 
     return true;
