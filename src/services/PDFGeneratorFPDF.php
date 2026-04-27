@@ -8,7 +8,6 @@ use FPDF;
 
 /**
  * Generador de PDFs con FPDF
- * Crea PDFs profesionales para DTEs
  */
 class PDFGeneratorFPDF
 {
@@ -62,7 +61,7 @@ class PDFGeneratorFPDF
      */
     private function generarEncabezado($pdf, $dte)
     {
-        // Logo (opcional)
+        // Logo
         $logoPath = __DIR__ . '/../../public/logos/logo-empresa.png';
         if (file_exists($logoPath)) {
             $pdf->Image($logoPath, 10, 10, 40);
@@ -70,7 +69,7 @@ class PDFGeneratorFPDF
  
         // Datos del emisor
         $pdf->SetFont('Arial', 'B', 14);
-        $pdf->Cell(0, 6, $this->convertir('EMPRESA EJEMPLO S.A. DE C.V.'), 0, 1, 'C');
+        $pdf->Cell(0, 6, $this->convertir('EMPRESA DSST S.A. DE C.V.'), 0, 1, 'C');
         
         $pdf->SetFont('Arial', '', 9);
         $pdf->Cell(0, 4, $this->convertir('NIT: 0614-123456-001-5'), 0, 1, 'C');
@@ -103,7 +102,7 @@ class PDFGeneratorFPDF
         $pdf->SetFont('Arial', '', 10);
         $pdf->Cell(0, 6, date('d/m/Y H:i', strtotime($dte['creado_en'])), 0, 1);
  
-        // NUEVO: Caja y Facturador
+        // Caja y Facturador
         if (!empty($dte['numero_caja'])) {
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->Cell(50, 6, 'Caja:', 0, 0);

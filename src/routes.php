@@ -58,7 +58,7 @@ return function (App $app) {
             $protected->get('/dte/{id}', [DTEController::class, 'obtener']);
             $protected->get('/dte/{id}/pdf', [DTEController::class, 'descargarPDF']);
 
-            // INVALIDACIÓN (Módulo 3)
+            // INVALIDACIÓN
             $protected->post('/dte/{id}/invalidar', [InvalidacionController::class, 'invalidar']);
             $protected->get('/dte/{id}/puede-invalidar', [InvalidacionController::class, 'puedeInvalidar']);
 
@@ -74,12 +74,6 @@ return function (App $app) {
         $response->getBody()->write(json_encode([
             'success' => true,
             'message' => 'API de Facturación Electrónica SV',
-            'version' => '3.0.0',
-            'modulos' => [
-                'Módulo 1' => 'CRUD Clientes, Productos, Stock',
-                'Módulo 2' => 'Formularios diferenciados, Cliente al vuelo, Catálogos',
-                'Módulo 3' => 'PDFs reales con FPDF, Invalidación completa'
-            ],
             'endpoints' => [
                 'POST /api/login' => 'Autenticación',
                 'GET /api/clientes' => 'Listar clientes',
